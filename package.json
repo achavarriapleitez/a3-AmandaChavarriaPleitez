@@ -1,16 +1,20 @@
 {
-  "name": "a2-amandachavarriapleitez",
-  "description": "Assignment 2 - Short Stack: Basic Two-tier Web Application using HTML/CSS/JS and Node.js   ===",
-  "author": "",
+  "name": "a3-amandachavarriapleitez",
+  "description": "Assignment 3 - Persistence: Two-tier Web Application with Database, Express server, and CSS template   ===",
+  "author": "Amanda Chavarria Pleitez",
   "scripts": {
-    "start": "node server.improved.js"
+    "start": "node --env-file=.env server.js"
   },
   "dependencies": {
     "express": "^5.1.0",
-    "mime": "^2.6.0"
+    "mime": "^2.6.0",
+    "mongodb": "^6.19.0"
   },
   "version": "1.0.0",
   "main": "Node.js",
   "keywords": [],
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
 }

@@ -1,113 +1,166 @@
-const http = require("http"),
-      fs   = require("fs"),
-      mime = require("mime"),//mime describes the type of file
-      dir  = "public/",
-      port = 3000;
+const express = require("express");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const path = require("path");
 
-// In-memory dataset for mood entries
-const appdata = [
-    { "date": "2025-08-31", "mood": "Happy", "energy": 8, "status": "High Spirits" }
-];
+const app = express();
+const port = process.env.PORT || 3000;
 
-// Create server
-const server = http.createServer(function(request, response) {
-  if (request.method === "GET") {
-    handleGet(request, response);
-  } else if (request.method === "POST") {
-    handlePost(request, response);
-  } else if (request.method === "DELETE") {
-    handleDelete(request, response);
+// ===== Middleware =====
+app.use(express.static("public"));
+app.use(express.static("views"));
+app.use(express.json());
+
+// ===== MongoDB setup =====
+const uri = `mongodb+srv://${process.env.USERNM}:${process.env.PASS}@${process.env.HOST}/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+let entriesCollection = null;
+let usersCollection = null;
+
+async function connectDB() {
+  try {
+    await client.connect();
+    const db = client.db("A3");
+
+    entriesCollection = db.collection("myA3Data");
+    usersCollection = db.collection("users");
+
+    // confirm connection
+    await db.command({ ping: 1 });
+    console.log("✅ Connected to MongoDB!");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+  }
+}
+
+connectDB();
+
+// ===== Routes =====
+
+// Home
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/index.html"));
+});
+
+// User login
+app.post("/login", async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) return res.status(400).json({ error: "Username is required" });
+
+  try {
+    let user = await usersCollection.findOne({ username });
+
+    if (!user) {
+      await usersCollection.insertOne({ username });
+      console.log("New user created:", username);
+    } else {
+      console.log("User logged in:", username);
+    }
+
+    res.json({ success: true, username });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
-// Handle GET requests
-const handleGet = function(request, response) {
-    if (request.url === "/") {
-      sendFile(response, dir + "index.html");
-    } else if (request.url === "/data") {
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(appdata));
-    } else {
-      sendFile(response, dir + request.url.slice(1));
-    }
-  };
-
-// Handle POST requests
-const handlePost = function(request, response) {
-  if (request.url === "/data") {
-    let dataString = "";
-
-    request.on("data", chunk => { dataString += chunk; });
-
-    request.on("end", () => {
-      console.log("Raw POST body:", dataString);
-      const newEntry = JSON.parse(dataString);
-
-      // Derived field: numeric score
-      const moodValues = { Happy: 2, Neutral: 1, Sad: 0 };
-      const energyValues = { 1: 0, 2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8 };
-      newEntry.score = (moodValues[newEntry.mood] || 0) + (energyValues[newEntry.energy] || 0);
-
-      //Derived field: interpretation category
-      if (newEntry.mood === "Happy" && newEntry.energy >= 7) {
-        newEntry.status = "High Spirits";
-      } else if (newEntry.mood === "Sad" && newEntry.energy <= 3){
-        newEntry.status = "Low Point";
-      } else if (newEntry.energy >= 8) {
-        newEntry.status = "Energized";
-      } else if (newEntry.energy <= 3) {
-        newEntry.status = "Tired";
-      } else {
-        newEntry.status = "Moderate";
-      }
-
-      console.log("New entry with status:", newEntry);
-      appdata.push(newEntry);
-
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(appdata));
-    });
-  } else {
-    response.writeHead(404);
-    response.end("Not Found");
+// Get all entries for a specific user
+app.get("/entries/:username", async (req, res) => {
+  try {
+    const entries = await entriesCollection
+      .find({ username: req.params.username })
+      .toArray();
+    res.json(entries);
+  } catch (err) {
+    console.error("Error fetching entries:", err);
+    res.status(500).send("Error fetching entries");
   }
-};
+});
 
-// Handle DELETE requests
-const handleDelete = function(request, response) {
-  if (request.url.startsWith("/data/")) {
-    const index = parseInt(request.url.split("/").pop(), 10);
+// Add new entry
+app.post("/submit", async (req, res) => {
+  try {
+    const newEntry = req.body;
 
-    if (!isNaN(index) && index >= 0 && index < appdata.length) {
-      appdata.splice(index, 1);
-      response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify(appdata));
-    } else {
-      response.writeHead(400);
-      response.end("Invalid index");
+    if (!newEntry.username) {
+      return res.status(400).json({ error: "Username is required >:(" });
     }
-  } else {
-    response.writeHead(404);
-    response.end("Not Found");
+
+    // Ensure notes field exists
+    newEntry.notes = newEntry.notes || "";
+
+    // Derived field: score
+    const moodValues = { Happy: 2, Neutral: 1, Sad: 0 };
+    const energyValues = {
+      1: 0, 2: 0, 3: 1, 4: 2, 5: 3,
+      6: 4, 7: 5, 8: 6, 9: 7, 10: 8
+    };
+    newEntry.score =
+      (moodValues[newEntry.mood] || 0) + (energyValues[newEntry.energy] || 0);
+
+    // Derived field: status
+    if (newEntry.mood === "Happy" && newEntry.energy >= 7) newEntry.status = "High Spirits";
+    else if (newEntry.mood === "Sad" && newEntry.energy <= 3) newEntry.status = "Low Point";
+    else if (newEntry.energy >= 8) newEntry.status = "Energized";
+    else if (newEntry.energy <= 3) newEntry.status = "Tired";
+    else newEntry.status = "Moderate";
+
+    const result = await entriesCollection.insertOne(newEntry);
+    console.log("Inserted entry:", result.insertedId);
+
+    res.json({ _id: result.insertedId, ...newEntry });
+  } catch (err) {
+    console.error("Error inserting entry:", err);
+    res.status(500).send("Error inserting entry");
   }
-};
+});
 
-// Serve static files
-  const sendFile = function(response, filename) {
-  const type = mime.getType(filename);
+// Update an entry
+app.put("/entries/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedEntry = req.body;
 
-  fs.readFile(filename, function(err, content) {
-    if (err === null) {
-      response.writeHead(200, { "Content-Type": type });
-      response.end(content);
-    } else {
-      response.writeHead(404);
-      response.end("404 Error: File Not Found");
-    }
-  });
-};
+    // Ensure notes field exists
+    updatedEntry.notes = updatedEntry.notes || "";
 
-// Start server
-server.listen(process.env.PORT || port, () => {
+    const result = await entriesCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedEntry }
+    );
+
+    if (result.modifiedCount === 1) res.json({ message: "Updated successfully" });
+    else res.status(404).json({ error: "Entry not found" });
+  } catch (err) {
+    console.error("Error updating entry:", err);
+    res.status(500).send("Error updating entry");
+  }
+});
+
+// Delete entry by ID
+app.delete("/entries/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log("Deleting entry with id:", id);
+
+    const result = await entriesCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 1) res.json({ message: "Entry deleted" });
+    else res.status(404).json({ error: "Entry not found" });
+  } catch (err) {
+    console.error("Error deleting entry:", err);
+    res.status(500).send("Error deleting entry");
+  }
+});
+
+// ===== Start Server =====
+app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
