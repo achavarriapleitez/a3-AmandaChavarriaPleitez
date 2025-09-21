@@ -49,26 +49,35 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views/index.html"));
 });
 
-// User login
+// User login with password
 app.post("/login", async (req, res) => {
-  const { username } = req.body;
+  const { username, password } = req.body;
 
-  if (!username) return res.status(400).json({ error: "Username is required" });
+  if (!username || !password) {
+    return res.status(400).json({ success: false, error: "Username and password are required" });
+  }
 
   try {
     let user = await usersCollection.findOne({ username });
 
     if (!user) {
-      await usersCollection.insertOne({ username });
-      console.log("New user created:", username);
-    } else {
-      console.log("User logged in:", username);
+      // Create account
+      await usersCollection.insertOne({ username, password });
+      console.log("✅ New account created:", username);
+      return res.json({ success: true, message: "Account created successfully", username });
     }
 
-    res.json({ success: true, username });
+    // Check password
+    if (user.password !== password) {
+      console.log("❌ Wrong password for user:", username);
+      return res.json({ success: false, error: "Incorrect password" });
+    }
+
+    console.log("✅ User logged in:", username);
+    res.json({ success: true, message: "Login successful", username });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: "Login failed" });
+    res.status(500).json({ success: false, error: "Login failed" });
   }
 });
 

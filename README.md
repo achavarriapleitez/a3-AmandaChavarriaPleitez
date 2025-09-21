@@ -1,33 +1,30 @@
-Sample Readme (delete the above when you're ready to submit, and modify the below so with your links and descriptions)
----
+Deployed web service on Render: https://a3-amandachavarriapleitez.onrender.com
 
-## Mood Tracker
-This is a simple web-based mood tracker that allows users to log their daily mood, energy level, and see a derived "status" based on their input. The app displays all entris in a table with a custom delete confirmation modal.
+Technical Achievements
 
-CSS & Layout:
-- Uses a flexbox-centered container to position the content in the middle of the screen.
-- A semi-transparent, blurred container overlays a full screen GIF background for visual aesthetics.
+1. Single-Page App with Real-Time Updates – 
+I implemented a single-page application where users can add a mood entry and immediately see the updated table without reloading the page. When a user submits an entry, the data is sent to the server, which calculates derived fields like score and status, and then returns the full list of entries. The client updates the DOM dynamically using JavaScript, including a dataCache array to track current entries for editing purposes. This was challenging because it required managing asynchronous requests, ensuring the UI remained consistent, and properly handling the addition of the new notes field. I also had to handle edge cases such as editing an entry while other entries exist in the table.
 
-How to Use:
-- Clone or download the repository.
-- Install Node.js if not already installed.
-- Navigate to the project folder in your terminal and run node server.js
-- Open your browser and go to http://localhost:3000 (this is where it runs)!
-- Fill out the form with today's date, mood, and energy level, then click "Add Mood".
-- Your entries will appear in the table along with a derived status.
-- Use the "Delete" button to remove any entry; a confirmation modal will appear before deletion.
+2. Full CRUD Implementation (Create, Read, Update, Delete) – 
+Beyond adding entries, I implemented full CRUD functionality: users can edit or delete any entry. I tracked each entry’s _id from MongoDB so that edits update the correct document on the server. The delete functionality removes the entry from both the database and the displayed table instantly. This achievement was challenging because it required careful management of DOM elements, event listeners for dynamic buttons, and ensuring that the client and server states were always in sync.
 
-## Technical Achievements
-- **Tech Achievement 1**: Built a Node.js application with a simple HTTP server and in-memory data storage.
-- **Tech Achievement 2**: Implemented routes for GET, POST, and DELETE operations to manage mood entries.
-- **Tech Achievement 3**: Added derived fields score and status on the server to provide automatic interpretations of user data.
-- **Tech Achievement 4**: Created a dynamic table in the frontend using JavaScript to display all entries with live updates.
-- **Tech Achievement 5**: Implemented a custom delete confirmation modal to prevent accidental entry deletions.
-- **Tech Achievement 6**: Used a backdrop-filter for a blurred, semi-transparent container.
+3. Deployment and Environment Configuration –
+I deployed the site to Render, which involved configuring environment variables to securely store MongoDB credentials. Initially, I encountered errors due to the .env file being ignored by Git for security. I learned to configure Render’s environment variables and update the start command in package.json to properly load them. This allowed the application to run securely in production without exposing sensitive information in the repository.
 
-### Design/Evaluation Achievements
-- **Design Achievement 1**: Designed a visually appealing inferface with a full-screen animated background and a clear, readable form.
-- **Design Achievement 2**: Ensured the UI is responsive for various screen sizes.
-- **Design Achievement 3**: Added user feedback mechanisms such as the confirmation modal for deletions, table update after form submission.
-- **Design Achievement 4**: Tested derived field logic to accurately categorize moods and energy into meaningful statuses.
-- **Design Achievement 5**: Prioritized usability by including input validation for mood and energy fields.
+Design / UX Achievements
+
+1. Accessibility Enhancements – 
+I implemented twelve accessibility improvements based on W3C guidelines. Examples include semantic HTML for headings and form elements, labels for all inputs, proper color contrast between text and backgrounds, and etc. This was challenging because some default Bootstrap styles did not meet accessibility standards, requiring overrides and testing. The improvements make the site usable for users with visual impairments and improve overall usability.
+
+2. CRAP Principles – 
+
+Contrast: I used strong color differences between table headers and content, as well as bright buttons against the white background, to draw attention to key elements like actions and data entry points.
+
+Repetition: Consistent use of Bootstrap cards, buttons, and font styles across the site reinforces a unified look and feel, making it easier for users to recognize functional elements.
+
+Alignment: All form fields, labels, and table columns are left-aligned, creating a clean and organized layout that guides the user’s eye naturally through the interface.
+
+Proximity: Related items, such as mood, energy, and notes inputs, are grouped together within the form, and action buttons (edit/delete) are clustered in the table, making the interface intuitive to navigate.
+
+3. User Testing / Feedback –
+I conducted a short user test where participants(2 of my friends) were asked to add, edit, and delete a mood entry without guidance. They generally understood the form quickly, but some initially missed the “edit” button due to its size and placement. One participant suggested that the notes field could be more prominent. Based on this feedback, I would consider enlarging the edit buttons and providing subtle visual cues for optional notes to further improve clarity and usability.
