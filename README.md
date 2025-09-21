@@ -2,29 +2,47 @@ Deployed web service on Render: https://a3-amandachavarriapleitez.onrender.com
 
 Technical Achievements
 
-1. Single-Page App with Real-Time Updates – 
-I implemented a single-page application where users can add a mood entry and immediately see the updated table without reloading the page. When a user submits an entry, the data is sent to the server, which calculates derived fields like score and status, and then returns the full list of entries. The client updates the DOM dynamically using JavaScript, including a dataCache array to track current entries for editing purposes. This was challenging because it required managing asynchronous requests, ensuring the UI remained consistent, and properly handling the addition of the new notes field. I also had to handle edge cases such as editing an entry while other entries exist in the table.
+1. Single-Page App with Real-Time Data Updates (5 points)
+- Implemented a single-page application using vanilla JavaScript and Express.js, where users can submit mood entries and immediately see their data reflected in the table without reloading the page.
+- The server calculates derived fields such as score and status for each entry. After submission, the client fetches the updated list of entries from the server and dynamically updates the table.
+- Challenge: Ensuring the table stays in sync with server-side data required careful management of state in dataCache and proper async handling of fetch requests.
 
-2. Full CRUD Implementation (Create, Read, Update, Delete) – 
-Beyond adding entries, I implemented full CRUD functionality: users can edit or delete any entry. I tracked each entry’s _id from MongoDB so that edits update the correct document on the server. The delete functionality removes the entry from both the database and the displayed table instantly. This achievement was challenging because it required careful management of DOM elements, event listeners for dynamic buttons, and ensuring that the client and server states were always in sync.
+2. Full CRUD Functionality (5 points)
+- Added the ability to create, read, update, and delete mood entries.
+    - Create: Users can add new mood entries via the form.  
+    - Read: Data is fetched from MongoDB and displayed in the table.
+    - Update: Clicking an "Edit" button pre-populates the form for an existing entry, which can then be saved to update the server data.
+    - Delete: Users can remove entries directly from the table.
+- Challenge: Integrating editing functionality required tracking the _id of the entry being edited and differentiating between a new submission and an update. Ensuring updates also refreshed the table correctly was a tricky part of asynchronous client-server interaction.
 
-3. Deployment and Environment Configuration –
-I deployed the site to Render, which involved configuring environment variables to securely store MongoDB credentials. Initially, I encountered errors due to the .env file being ignored by Git for security. I learned to configure Render’s environment variables and update the start command in package.json to properly load them. This allowed the application to run securely in production without exposing sensitive information in the repository.
+3. Notes Field Integration
+- Extended the data model to include an optional notes field for each mood entry.
+- Updated both front-end (form input and table column) and server-side logic to handle the notes field.
+- Challenge: Making sure notes persisted correctly and displayed alongside other entry data required carefully updating both the server routes and the DOM manipulation logic.
 
 Design / UX Achievements
 
-1. Accessibility Enhancements – 
-I implemented twelve accessibility improvements based on W3C guidelines. Examples include semantic HTML for headings and form elements, labels for all inputs, proper color contrast between text and backgrounds, and etc. This was challenging because some default Bootstrap styles did not meet accessibility standards, requiring overrides and testing. The improvements make the site usable for users with visual impairments and improve overall usability.
+1. User Interface Testing with Think-Aloud Protocol (5 points)
+- Conducted informal usability testing with two friends.
+- Task: "Add a mood entry with a date, mood, energy, and optional notes, then edit the entry and delete one entry from the table."
+- Findings:
+    - Positive Comments: 
+        - Users appreciated the immediate update of the table after submission and commented that the notes field made the interface feel more personalized as there is only so much that can be communicated with multiple choice options and numbers.
+    - Potential Improvements: 
+        - Consider adding a small tooltip or hover effect on action buttons to make the interface even more intuitive. Also, adding a confirmation prompt for deletion could prevent accidental data loss(had a modal to confirm deletion of entry in A2 but removed it for A3).
+        - Consider adding more mood options besides just Happy, Neutral, and Sad. 
+        - Consider improving the Status logic for interpreting entries.
+        - Consider adding a 'sign out' button on the Mood Tracker index.html.
 
-2. CRAP Principles – 
+2. Accessibility & Lighthouse Achievements
+- High Lighthouse Scores: Both the login page and the mood tracker homepage scored between 98–100 on Accessibility, SEO, Performance, and Best Practices when tested with Google Lighthouse.
+    - Accessibility Improvements: I made sure to use semantic HTML for form elements and headings, proper labeling of inputs, sufficient color contrast, and keyboard navigability. This ensures the app is usable by people with visual or motor impairments.
+    - SEO Enhancements: Added descriptive titles, meta tags, and etc so the site is search-friendly and understandable by assistive technologies.
+    - Performance Optimizations: Used Bootstrap’s lightweight grid system and optimized client-side JavaScript to keep load times fast even with dynamic updates.
+    - Best Practices: Followed modern web standards (secure connections, responsive design, minimized unused code), which Lighthouse validated.
 
-Contrast: I used strong color differences between table headers and content, as well as bright buttons against the white background, to draw attention to key elements like actions and data entry points.
+3. User-Friendly Feedback
+- The app provides immediate feedback (new entries appear instantly, edits update in place, deletions remove rows right away). This makes the experience feel smooth and interactive, reducing confusion.
 
-Repetition: Consistent use of Bootstrap cards, buttons, and font styles across the site reinforces a unified look and feel, making it easier for users to recognize functional elements.
-
-Alignment: All form fields, labels, and table columns are left-aligned, creating a clean and organized layout that guides the user’s eye naturally through the interface.
-
-Proximity: Related items, such as mood, energy, and notes inputs, are grouped together within the form, and action buttons (edit/delete) are clustered in the table, making the interface intuitive to navigate.
-
-3. User Testing / Feedback –
-I conducted a short user test where participants(2 of my friends) were asked to add, edit, and delete a mood entry without guidance. They generally understood the form quickly, but some initially missed the “edit” button due to its size and placement. One participant suggested that the notes field could be more prominent. Based on this feedback, I would consider enlarging the edit buttons and providing subtle visual cues for optional notes to further improve clarity and usability.
+4. Personalization with Welcome Message
+- After login, users see a personalized greeting (“Welcome, (user)!”). This creates a sense of connection and ownership over their data — a small but meaningful UX touch.
