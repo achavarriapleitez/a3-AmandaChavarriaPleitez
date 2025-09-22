@@ -2,12 +2,12 @@ Deployed web service on Render: https://a3-amandachavarriapleitez.onrender.com
 
 Technical Achievements
 
-1. Single-Page App with Real-Time Data Updates (5 points)
+1. Single-Page App with Real-Time Data Updates
 - Implemented a single-page application using vanilla JavaScript and Express.js, where users can submit mood entries and immediately see their data reflected in the table without reloading the page.
 - The server calculates derived fields such as score and status for each entry. After submission, the client fetches the updated list of entries from the server and dynamically updates the table.
 - Challenge: Ensuring the table stays in sync with server-side data required careful management of state in dataCache and proper async handling of fetch requests.
 
-2. Full CRUD Functionality (5 points)
+2. Full CRUD Functionality
 - Added the ability to create, read, update, and delete mood entries.
     - Create: Users can add new mood entries via the form.  
     - Read: Data is fetched from MongoDB and displayed in the table.
@@ -22,7 +22,7 @@ Technical Achievements
 
 Design / UX Achievements
 
-1. User Interface Testing with Think-Aloud Protocol (5 points)
+1. User Interface Testing with Think-Aloud Protocol
 - Conducted informal usability testing with two friends.
 - Task: "Add a mood entry with a date, mood, energy, and optional notes, then edit the entry and delete one entry from the table."
 - Findings:
